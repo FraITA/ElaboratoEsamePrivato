@@ -1,0 +1,20 @@
+<div class='container-md'>
+	<div class='row'>
+		<div class='col-2'> 
+			<label for='servizio'> Metodo di ricerca: </label> 
+		</div>
+		<div class='col-2'> 
+			<select id='opzioniRicerca' onchange='toggleRicerca(this.value)'>
+				<option value='nome'> Per nome </option>
+				<option value='cognome'> Per cognome </option>
+				<option value='comune'> Per comune </option>
+			</select> 
+		</div>
+	</div>
+	<div class='row' id='containerComune' style='display: none;'>
+		<div class='col-2'>
+			<label for='comune'> Comune: </label>
+		</div>
+		<div class='col-2'>
+			<select id='comune' onchange='ricercaClienti("comune")'>
+				<option id='delete'> </option>
