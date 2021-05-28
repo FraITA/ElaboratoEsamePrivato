@@ -116,7 +116,7 @@ function validate_text(string){
 }
 
 function validate_iban(string){
-	var letters = /^[A-Za-zèòàù ]{0,30}$/s;
+	var letters = /^[A-Za-zèòàù0-9 ]{0,30}$/s;
 
 	return(letters.test(string));
 }
