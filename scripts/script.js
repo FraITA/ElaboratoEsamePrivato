@@ -34,20 +34,6 @@ function toggleRicerca(value){
 	}
 }
 
-function getPagamenti(select){
-	$("#delete").remove();
-	var serv = select.value;
-	
-	$.ajax({
-		url : "getPagamenti.php",
-		method : "GET",
-		data : { servizio :  serv },
-		success : function(data) {
-			$("#pagamenti").html(data);
-		}
-	});
-}
-
 function getDipendenti(select){
 	$("#delete").remove();
 	var valSede = select.value;

@@ -12,12 +12,12 @@ session_start();
 
 $gestore = new GestoreDB();
 
-if(isset($_GET["id_cliente"])){
+if(isset($_GET["id_cliente"]) && ($_SESSION["ruolo"] == "Amministratore")){
 	$gestore->mostraProfilo($_GET["id_cliente"]);
 	return;
 }
 
-if(isset($_GET["cod_fis"])){
+if(isset($_GET["cod_fis"]) && ($_SESSION["ruolo"] == "Amministratore")){
 	$gestore->mostraProfilo($_GET["cod_fis"]);
 	return;
 }
