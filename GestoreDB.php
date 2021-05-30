@@ -13,6 +13,8 @@
  */
 class GestoreDB {
 	
+	//Tutti i metodi che iniziano con "mostra" servono per stampare a schermo certi tag HTML e valori, o per leggere file HTML
+	
 	private function mostraTesta($titolo){
 		$head=file("htmlContent/headTop.html"); //leggo il file che contiene la parte di mezzo della mia pagina web
 		foreach ( $head as $row ) {
@@ -133,6 +135,7 @@ class GestoreDB {
 		$this->mostraCoda();
 	}
 	
+	//funzione per sanificare gli input, evitando l'esecuzione di possibile codice malevolo
 	private function clean_input($value){
 
 		$bad_chars = array("{", "}", "(", ")", ";", ":", "<", ">", "/", "$");
@@ -146,6 +149,7 @@ class GestoreDB {
 		return $value;
 	}
 	
+	//Valida gli input dato il tipo di input per cui validarlo e il valore dell'input stesso come argomento
 	private function val_input($tipo, $value){
 		switch($tipo){
 			case "email":
@@ -193,6 +197,7 @@ class GestoreDB {
 		return $value;
 	}
 	
+	//Metodo per ottenere una lista di tutte le sedi, con id e indirizzo collegato
 	private function getSedi(){
 		$connessione = $this->connetti();
 		
@@ -207,6 +212,7 @@ class GestoreDB {
 		}
 	}
 	
+	//Metodo per ottenere una lista di tutti i comuni di tutti i clienti non ripetuti
 	private function getComuni(){
 		$connessione = $this->connetti();
 		
@@ -221,6 +227,7 @@ class GestoreDB {
 		}
 	}
 	
+	//Metodo per mostrare tutti i clienti in una tabella che corrispondono con il nome, cognome o comune inserito
 	public function ricercaClienti(){
 		
 		$connessione = $this->connetti();
@@ -308,11 +315,13 @@ class GestoreDB {
 		echo("</table>");
 	}
 	
+	//Metodo per mostrare un profilo dato un codice fiscale (nel caso di dipendenti) o un id cliente
 	private function getProfilo($id){
 		
 		$value = $this->clean_input($id);
 		
 		$connessione = $this->connetti();
+		
 		if(isset($_GET["id_cliente"])){
 			$value = $this->val_input("number", $value);
 			$query = "SELECT * FROM cliente WHERE cliente.id_cliente = '" . $value ."'";
@@ -342,6 +351,7 @@ class GestoreDB {
 		echo("</div>");
 	}
 	
+	//Effettuo la registrazione
 	public function registra(){
 		
 		//Sanificazione input
@@ -400,15 +410,17 @@ class GestoreDB {
 		$connessione = null;
 	}
 	
+	//Effettuo il login
 	public function login(){
 		session_start();
 		
 		foreach($_POST as $key => $value){
-			$value = $this->clean_input($value);
+			$value = $this->clean_input($value);	//Sanificazione input
 		}
 		
 		$time = time();
 		
+		//Dopo 3 tentativi, bisogna aspettare 30 secondi
 		if(!empty($_SESSION["tempoInizio"])){
 			$intervallo = ($time-$_SESSION["tempoInizio"]) % 60;
 			
@@ -432,13 +444,14 @@ class GestoreDB {
 		$data = $response->fetchAll();
 		
 		foreach($data as $row){
-			if(($row['email'] == $email) && ($row['password'] == $pw)){
+			if(($row['email'] == $email) && ($row['password'] == $pw)){ //Controllo se i dati coincidono
 				echo("Login effettuato! Benvenuto " . $row["nome"] . " " . $row["cognome"] . "!");
 				if(isset($_POST["ricordami"])){
-					setcookie("email", $email, time()+60*60*24*30);
+					setcookie("email", $email, time()+60*60*24*30); //Setto il cookie con l'email se ha spuntato la checkbox "ricorda"
 				}else{
 					setcookie("email", "", time() - 3600);
 				}
+				//Salvo dati nelle variabili di sessione per identificarlo
 				$_SESSION["id"] = $row["cod_fis"];
 				$_SESSION["email"] = $row["email"];
 				$_SESSION["ruolo"] = $row["ruolo"];
@@ -448,10 +461,13 @@ class GestoreDB {
 			}
 		}
 		
+		//Se il login è fallito
 		$connessione = null;
 		
+		//Controllo se ha sbagliato 3 volte e aumento il counter
 		$this->controllaTentativi();
 		
+		//mostro messaggio di errore
 		$_SESSION["message"] = "Login fallito, email o password non corretto";
 		
 		if(isset($_SESSION["id"]) && isset($_SESSION["email"])){
@@ -463,6 +479,7 @@ class GestoreDB {
 		header( 'Location: login.php' );
 	}
 	
+	//Aumento il counter dei tentativi fatti
 	private function controllaTentativi(){
 		if(empty($_SESSION["nTent"])){
 			$_SESSION["nTent"] = 0;
@@ -476,13 +493,18 @@ class GestoreDB {
 		}
 	}
 	
-	
+	//Metodo per connettersi al DBMS
 	private function connetti(){
 		try{
 			$host = 'mysql:dbname=elaborato_esame;host=127.0.0.1;port=3306';
 			
+			//Effetto la connessione
 			$connection = new PDO($host, "root", "");
+			
+			//Setto la possibilità di vedere gli errori SQL via PHP
 			$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			
+			//Se non esistono, creo tutte le tabelle del DB
 			$queryDB = ' CREATE TABLE IF NOT EXISTS societa (
 						 id_societa INT(10) NOT NULL AUTO_INCREMENT ,
 						 partita_iva VARCHAR(11) NOT NULL ,
@@ -622,6 +644,7 @@ class GestoreDB {
 						ALTER TABLE richiesta ADD CONSTRAINT "È richiesto" da FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE CASCADE ON UPDATE CASCADE;';
 			$connection->exec($queryDB);
 		}catch(PDOException $e){
+			//Se ci sono eccezioni, mostro il messaggio d'errore
 			echo("Connection error: ".$e->getMessage());
 		}
 		//echo("Connessione effettuata!");
